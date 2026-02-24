@@ -1,0 +1,7 @@
+Trashed old attempt because too messy 
+**Also it updated to .100
+
+02.24.2025
+- got all the way up to making the 
+  optional bitfields for byte 1.
+  work on byte2 next time.

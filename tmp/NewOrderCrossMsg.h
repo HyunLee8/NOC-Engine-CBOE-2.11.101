@@ -133,7 +133,7 @@ namespace NewOrderCrossMessageFieldDynamics {
     //for organization cuz I may reuse Bitfields but for
     //now just know that Bitfields has stuff ilke
     //account which can be repeating
-    NonRepeatingOptionsField nonRepeatingOptionalFields;
+    NonRepeatingOptionalField nonRepeatingOptionalFields;
 };
 
 struct NewOrderCrossBitfield {
@@ -178,7 +178,8 @@ struct NonRepeatingOptionalField {
     PreventMatch preventMatch;
 
     //bitfield byte #2
-    
+    //LAST PICKUP HERE ^^^^
+
 };
 
 class NewOrderCrossMessageField {
