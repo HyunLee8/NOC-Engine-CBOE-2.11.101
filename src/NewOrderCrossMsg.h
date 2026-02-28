@@ -2,8 +2,8 @@
 #include <vector>
 #include <variant>
 #include <chrono>
+#include <array>
 #include <unordered_map>
-#include "StrongType.h"
 
 namespace StringLength {
     constexpr size_t CROSS_ID = 20;
@@ -70,7 +70,7 @@ enum class AttributedQuote : char {
 };
 
 enum class PreventMatch : char {
-//Figure out alter this shit is important
+    NONE = '0'
 };
 
 enum class BitfieldIndex1 : size_t {
@@ -95,14 +95,78 @@ enum class BitfieldIndex2 : size_t {
     CLEARING_OPTIONAL_DATA = 128
 };
 
-enum class BitfieldIndex3 : size_t {
+enum class AutoMatch : char {
+    DISABLED = '0',
+    MARKET = '1',
+    LIMIT = '2',
+    MARKET_NA = '3',
+    LIMIT_NA = '4'
+};
 
+enum class LastPriority : char {
+    DISABLED = '0',
+    ENABLED = '1',
+};
+
+enum class BitfieldIndex3 : size_t {
+    NONE = 0
 };
 
 enum class BitfieldIndex4 : size_t {
-    
+    NONE = 0
 };
 
+struct NewOrderCrossBitfield {
+    size_t indexNum;
+    uint16_t bitfield;
+};
+
+struct RepeatingOptionalBitfield {
+    char account[16];
+    uint32_t cmtaNumber;
+    uint32_t clearingAccount;
+    std::array<char, StringLength::CLEARING_OPTIONAL_DATA> clearingOptionalData;
+    std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId;
+};
+
+struct RepeatingGroup {
+    Side side;
+    uint32_t allocQuantity;
+    std::array<char, StringLength::CLIENT_ORDER_ID> clientOrderId;
+    Capacity capacity;
+    OpenClose openClose;
+    std::array<char, StringLength::GIVE_UP_FIRM_ID> giveUpFirmId;
+
+    // if the bitfields bit is 1 for the following:
+    // account, cmtaNum, clearing acc, clearing opt data, frequent traderID, then it is repeating
+    // If this group is not accounced in number of bitfields
+    // then DON'T pad shit. Just don;t add and order that don't
+    // have a speicfic bitfield even though it was ivluded just pad that jaunt
+
+    RepeatingOptionalBitfield repeatingOptionalBitfields;
+};
+
+struct NonRepeatingOptionalField {
+    //bitfield byte #1
+    std::array<char, StringLength::SYMBOL> symbol;
+    std::string maturityDate;
+    uint64_t strikePrice;
+    PutOrCall putOrCall;
+    char execInst;
+    AttributedQuote attributedQuote;
+    std::array<char, StringLength::TARGET_PARTY_ID> targetPartyId;
+    PreventMatch preventMatch;
+
+    //bitfield byte #2
+    //LAST PICKUP HERE ^^^^
+    AutoMatch autoMatch;
+    uint64_t autoMatchPrice;
+    LastPriority lastPriority;
+    std::array<char, StringLength::ACCOUNT> account;
+    uint32_t cmtaNumber;
+    std::array<char, StringLength::CLEARING_ACCOUNT> clearingAccount;
+    std::array<char, StringLength::ROUTING_FIRM_ID> routingFirmId;
+};
 
 namespace NewOrderCrossMessageFieldConstants {
     constexpr uint16_t START_OF_MESSAGE = 47802;
@@ -114,9 +178,9 @@ namespace NewOrderCrossMessageFieldDynamics {
     uint16_t MESSAGE_LENGTH;
     uint8_t MATCHING_UNIT;
     uint32_t SEQUENCE_NUMBER;
-    char CROSS_ID[StringLength::CROSS_ID];
-    CrossTypes CROSS_TYPE[StringLength::CROSS_TYPE];
-    CrossPrioritization CROSS_PRIORITIZATION[StringLength::CROSS_PRIORITIZATION];
+    std::array<char, StringLength::CROSS_ID> CROSS_ID;
+    std::array<char, StringLength::CROSS_TYPE> CROSS_TYPE;
+    std::array<char, StringLength::CROSS_PRIORITIZATION> CROSS_PRIORITIZATION;
     uint64_t PRICE;
     uint32_t ORDER_QTY;
 
@@ -134,52 +198,6 @@ namespace NewOrderCrossMessageFieldDynamics {
     //now just know that Bitfields has stuff ilke
     //account which can be repeating
     NonRepeatingOptionalField nonRepeatingOptionalFields;
-};
-
-struct NewOrderCrossBitfield {
-    size_t indexNum;
-    uint16_t bitfield;
-};
-
-struct RepeatingGroup {
-    Side side;
-    uint32_t allocQuantity;
-    char clientOrderId[StringLength::CLIENT_ORDER_ID];
-    Capacity capacity;
-    OpenClose openClose;
-    char giveUpFirmId[StringLength::GIVE_UP_FIRM_ID];
-
-    // if the bitfields bit is 1 for the following:
-    // account, cmtaNum, clearing acc, clearing opt data, frequent traderID, then it is repeating
-    // If this group is not accounced in number of bitfields
-    // then DON'T pad shit. Just don;t add and order that don't
-    // have a speicfic bitfield even though it was ivluded just pad that jaunt
-    RepeatingOptionalBitfield repeatingOptionalBitfields;
-
-};
-
-struct RepeatingOptionalBitfield {
-    char account[16];
-    uint32_t cmtaNumber;
-    uint32_t clearingAccount;
-    char clearingOptionalData[StringLength::CLEARING_OPTIONAL_DATA];
-    char frequentTraderId[StringLength::FREQUENT_TRADER_ID]; 
-};
-
-struct NonRepeatingOptionalField {
-    //bitfield byte #1
-    char symbol[StringLength::SYMBOL];
-    std::string maturityDate;
-    uint64_t strikePrice;
-    PutOrCall putOrCall;
-    char execInst;
-    AttributedQuote attributedQuote;
-    char targetPartyId[StringLength::TARGET_PARTY_ID];
-    PreventMatch preventMatch;
-
-    //bitfield byte #2
-    //LAST PICKUP HERE ^^^^
-
 };
 
 class NewOrderCrossMessageField {
