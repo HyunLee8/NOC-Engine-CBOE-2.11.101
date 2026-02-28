@@ -168,28 +168,25 @@ struct NonRepeatingOptionalField {
     std::array<char, StringLength::ROUTING_FIRM_ID> routingFirmId;
 };
 
-namespace NewOrderCrossMessageFieldConstants {
-    constexpr uint16_t START_OF_MESSAGE = 47802;
-    constexpr uint16_t MESSAGE_TYPE = 65;
-    constexpr uint16_t MATCHIG_UNIT = 0;
-}
+class NewOrderCrossMessageFields {
+private:
+    const uint16_t startOfMessage = 47802;
+    const uint16_t messageLength;
+    const uint16_t messageType = 65;
+    const uint16_t matchingUnit = 0;
+    uint32_t sequenceNumber;
+    std::array<char, StringLength::CROSS_ID> crossId;
+    std::array<char, StringLength::CROSS_TYPE> crossType;
+    std::array<char, StringLength::CROSS_PRIORITIZATION> crossPrioritization;
+    uint64_t price;
+    uint32_t orderQuantity;
 
-namespace NewOrderCrossMessageFieldDynamics {
-    uint16_t MESSAGE_LENGTH;
-    uint8_t MATCHING_UNIT;
-    uint32_t SEQUENCE_NUMBER;
-    std::array<char, StringLength::CROSS_ID> CROSS_ID;
-    std::array<char, StringLength::CROSS_TYPE> CROSS_TYPE;
-    std::array<char, StringLength::CROSS_PRIORITIZATION> CROSS_PRIORITIZATION;
-    uint64_t PRICE;
-    uint32_t ORDER_QTY;
-
-    uint8_t NUMBER_OF_NEW_ORDER_CROSS_BITFIELDS; //DIRECTLY COUNTS AMOUNT OF OPTIONAL FIELDS AT THE END. Some bitfields are repeating groups and others aren't
-    std::vector<NewOrderCrossBitfield> NEW_ORDER_CROSS_BITFIELDS;
+    uint8_t numberOfNewOrderCrossBitfields; //DIRECTLY COUNTS AMOUNT OF OPTIONAL FIELDS AT THE END. Some bitfields are repeating groups and others aren't
+    std::vector<NewOrderCrossBitfield> newOrderCrossBitfields;
 
     //repeating fields w/ optional fields | must be includded
-    uint16_t GROUP_COUNT;
-    std::vector<RepeatingGroup> REPEATING_GROUPS;
+    uint16_t groupCount;
+    std::vector<RepeatingGroup> repeatingGroups;
 
     //Non-repeating Optional Fields.
     //name is a bit misleading since Bitfields still
@@ -198,12 +195,12 @@ namespace NewOrderCrossMessageFieldDynamics {
     //now just know that Bitfields has stuff ilke
     //account which can be repeating
     NonRepeatingOptionalField nonRepeatingOptionalFields;
-};
 
-class NewOrderCrossMessageField {
-private:
 public:
+    NewOrderCrossMessageFields();
 
+private:
+    const std::string stringPayload;
 };
 
 

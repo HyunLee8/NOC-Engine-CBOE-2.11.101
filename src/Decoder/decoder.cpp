@@ -4,5 +4,9 @@
 #include "decoder.h"
 
 Decoder::Decoder(const std::string &hexPayload)
-    : payload(hexPayload), phase(Phase::START_OF_MESSAGE){}
+    : payload(hexPayload){}
+
+void Decoder::initiateDecoder() {
+
+}
 
