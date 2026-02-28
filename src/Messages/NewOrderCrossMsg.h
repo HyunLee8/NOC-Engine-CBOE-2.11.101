@@ -122,7 +122,7 @@ struct NewOrderCrossBitfield {
 };
 
 struct RepeatingOptionalBitfield {
-    char account[16];
+    std::array<char, StringLength::ACCOUNT> account;
     uint32_t cmtaNumber;
     uint32_t clearingAccount;
     std::array<char, StringLength::CLEARING_OPTIONAL_DATA> clearingOptionalData;
@@ -171,7 +171,7 @@ struct NonRepeatingOptionalField {
 class NewOrderCrossMessageFields {
 private:
     const uint16_t startOfMessage = 47802;
-    const uint16_t messageLength;
+    uint16_t messageLength;
     const uint16_t messageType = 65;
     const uint16_t matchingUnit = 0;
     uint32_t sequenceNumber;
@@ -197,7 +197,7 @@ private:
     NonRepeatingOptionalField nonRepeatingOptionalFields;
 
 public:
-    NewOrderCrossMessageFields();
+    NewOrderCrossMessageFields(const std::string &payload);
 
 private:
     const std::string stringPayload;

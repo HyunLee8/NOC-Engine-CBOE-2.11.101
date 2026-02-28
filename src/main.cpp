@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "../src/Decoder/decoder.h"
+#include "../src/Utils/Timer.h"
 
 std::string readHexPayload(const std::string &hexPayload) {
     std::string filePath = std::string("../docs/") + hexPayload;
@@ -23,10 +24,26 @@ std::string readHexPayload(const std::string &hexPayload) {
     return fileContent;
 }
 
-void runProcess(Decoder decoder) {
+void runProcess(Decoder& decoder) {
+    Timer timer;
+
+    timer.start();
     decoder.initiateDecoder();
+    timer.stop();
+    double decodingTime = timer.getTime();
+
+    //timer.start();
+    //encoder.initiateEncoder();
+    //timer.stop();
+    //double encodingTime = timer.getTime();
 
 }
+
+void displayOrder() {
+
+}
+
+
 
 int main(int argc, char* arg[]) {
     if(argc < 2) {
@@ -37,6 +54,7 @@ int main(int argc, char* arg[]) {
     std::string payload = readHexPayload(arg[1]);
     Decoder decoder(payload);
     runProcess(decoder);
+    displayOrder();
 
     return 0;
 }

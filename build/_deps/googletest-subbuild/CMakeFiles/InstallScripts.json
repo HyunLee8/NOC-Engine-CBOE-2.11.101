@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/isaaclee/dev/BOE-Engine-2.11.99/build/_deps/googletest-subbuild/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
