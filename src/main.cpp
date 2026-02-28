@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "../src/Decoder/decoder.h"
+#include "../src/Decoder/Decoder.h"
 #include "../src/Utils/Timer.h"
 
 std::string readHexPayload(const std::string &hexPayload) {

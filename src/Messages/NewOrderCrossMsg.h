@@ -117,7 +117,6 @@ enum class BitfieldIndex4 : size_t {
 };
 
 struct NewOrderCrossBitfield {
-    size_t indexNum;
     uint16_t bitfield;
 };
 
@@ -198,6 +197,35 @@ private:
 
 public:
     NewOrderCrossMessageFields(const std::string &payload);
+
+    uint16_t getMessageLength() {return this->messageLength;}
+    void setMessageLength(const uint16_t messageLength) {this->messageLength = messageLength;}
+
+    uint32_t getSequenceNumber() {return this->sequenceNumber;}
+    void setSequenceNumber(const uint16_t sequenceNumber) {this->sequenceNumber = sequenceNumber;}
+
+    std::array<char, StringLength::CROSS_ID>& getCrossId() {return this->crossId;}
+    void setCrossId(const std::array<char, StringLength::CROSS_ID>& crossId) {this->crossId = crossId;}
+
+    std::array<char, StringLength::CROSS_TYPE>& getCrossType() {return this->crossType;}
+    void setCrossType(const std::array<char, StringLength::CROSS_TYPE>& crossType) {this->crossType = crossType;}
+
+    std::array<char, StringLength::CROSS_PRIORITIZATION>& getCrossPrioritization() {return this->crossPrioritization;}
+    void setCrossPrioritization(const std::array<char, StringLength::CROSS_PRIORITIZATION>& crossPrioritization) {this->crossPrioritization = crossPrioritization;}
+
+    uint64_t getPrice() {return this->price;}
+    void setPrice(const uint64_t price) {this->price = price;}
+
+    uint32_t getOrderQuantity() {return this->orderQuantity;}
+    void setOrderQuantity(const uint32_t orderQuantity) {this->orderQuantity = orderQuantity;}
+
+    uint8_t getNumberOfNewOrderCrossBitfields() {return this->numberOfNewOrderCrossBitfields;}
+    void setNumberOfNewOrderCrossBitfields(const uint8_t numberOfNewOrderCrossBitfields) {this->numberOfNewOrderCrossBitfields = numberOfNewOrderCrossBitfields;}
+
+    std::vector<NewOrderCrossBitfield>& getNewOrderCrossBitfields() {return this->newOrderCrossBitfields;}
+    void setNewOrderCrossBitfields (const std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields) {this->newOrderCrossBitfields = newOrderCrossBitfields;}
+
+
 
 private:
     const std::string stringPayload;
