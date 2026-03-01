@@ -54,7 +54,6 @@ private:
 
     template<size_t N>
     std::array<char, N> hexToChars(std::string_view hex) {
-        // ← string_view instead of string
         std::array<char, N> arr;
         for (size_t i = 0; i < N; i++) {
             std::string byte(hex.substr(i * 2, 2)); // small temporary
@@ -63,5 +62,6 @@ private:
         return arr;
     }
 
+    char hexToChar(std::string_view hex);
 
 };

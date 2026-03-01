@@ -54,7 +54,7 @@ void Decoder::handleNumberOfNewOrderBitfields() {
 
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
     for (int i{}; i < numberOfNewOrderCrossBitfields; ++i) {
-        uint8_t bitfield = hexToUint8 (std::string(sv.substr(currIndex + i * 2, 2)));
+        uint8_t bitfield = hexToUint8(std::string(sv.substr(currIndex, 2)));
         newOrderCrossBitfields.push_back ({bitfield});
         currIndex += 2;
     }
@@ -69,31 +69,95 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
 
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
     std::vector<uint8_t> includedOptionalBitfields;
-    std::vector<uint8_t> matchedBitfields;
+    std::vector<uint8_t> matchedBitfields1; //use this for repeating groups at the end in switch statement
+    std::vector<uint8_t> matchedBitfields2;
 
+    //adds the bitfield values into included optional bitfields
     for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
         includedOptionalBitfields.push_back(newOrderCrossBitfield.bitfield);
     }
 
+    //goes through included optioanl bitfields and compares to the real bitfield values and
+    //push_back that compared value as matched.
     for (int i{}; i < includedOptionalBitfields.size(); ++i) {
         //bitfield byte 1
         if (i == 0) {
             for (const auto& bitfield : BitfieldIndex1Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
-                    matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
+                    matchedBitfields1.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
         } else { //bitfield byte 2
             for (const auto& bitfield : BitfieldIndex2Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
-                    matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
+                    matchedBitfields2.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
         }
     }
 
-    for (int i {}; i < )
 
+    std::vector<RepeatingGroup> repeatingGroups;
+    for (int i{}; i < groupLength; ++i) {
+        char side = hexToChar(std::string(sv.substr(currIndex, 2)));
+        repeatingGroups.at(i).side = static_cast<Side>(side);
+        currIndex += 4;
+
+        uint32_t allocQuantity = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+        repeatingGroups.at(i).allocQuantity = allocQuantity;
+        currIndex += 8;
+
+        std::array<char, StringLength::CLIENT_ORDER_ID> clientOrderId = hexToChars<StringLength::CLIENT_ORDER_ID>(std::string(sv.substr(currIndex, StringLength::CLIENT_ORDER_ID*2)));
+        repeatingGroups.at(i).clientOrderId = clientOrderId;
+        currIndex += StringLength::CLIENT_ORDER_ID*2;
+
+        char capacity = hexToChar(std::string(sv.substr(currIndex, 2)));
+        repeatingGroups.at(i).capacity = static_cast<Capacity>(capacity);
+        currIndex += 2;
+
+        char openClose = hexToChar(std::string(sv.substr(currIndex, 2)));
+        repeatingGroups.at(i).openClose = static_cast<OpenClose>(openClose);
+        currIndex += 2;
+
+        std::array<char, StringLength::GIVE_UP_FIRM_ID> giveUpFirmId = hexToChars<StringLength::GIVE_UP_FIRM_ID>(std::string(sv.substr(currIndex, StringLength::GIVE_UP_FIRM_ID*2)));
+        repeatingGroups.at(i).giveUpFirmId = giveUpFirmId;
+        currIndex += (StringLength::GIVE_UP_FIRM_ID*2);
+
+        for (const auto& bitfield : matchedBitfields1) {
+            switch (bitfield) {
+                case static_cast<uint8_t>(BitfieldIndex2::ACCOUNT): {
+                    std::array<char, StringLength::ACCOUNT> account = hexToChars<StringLength::ACCOUNT>(std::string(sv.substr(currIndex, StringLength::ACCOUNT*2)));
+                    repeatingGroups.at(i).repeatingOptionalBitfields.account = account;
+                    currIndex += (StringLength::ACCOUNT*2);
+                    break;
+                }
+                case static_cast<uint8_t>(BitfieldIndex2::CMTA_NUMBER): {
+                    uint32_t cmtaNumber = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+                    repeatingGroups.at(i).repeatingOptionalBitfields.cmtaNumber = cmtaNumber;
+                    currIndex += 8;
+                    break;
+                }
+                case static_cast<uint8_t>(BitfieldIndex2::CLEARING_ACCOUNT): {
+                    uint32_t clearingAccount = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+                    repeatingGroups.at(i).repeatingOptionalBitfields.clearingAccount = clearingAccount;
+                    currIndex += 8;
+                    break;
+                }
+                case static_cast<uint8_t>(BitfieldIndex2::CLEARING_OPTIONAL_DATA): {
+                    std::array<char, StringLength::CLEARING_OPTIONAL_DATA> clearingOptionalData = hexToChars<StringLength::CLEARING_OPTIONAL_DATA>(std::string(sv.substr(currIndex, StringLength::CLEARING_OPTIONAL_DATA*2)));
+                    repeatingGroups.at(i).repeatingOptionalBitfields.clearingOptionalData = clearingOptionalData;
+                    currIndex += (StringLength::CLEARING_OPTIONAL_DATA*2);
+                    break;
+                }
+                case static_cast<uint8_t>(BitfieldIndex4::FREQUENT_TRADER_ID): {
+                    std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId = hexToChars<StringLength::FREQUENT_TRADER_ID>(std::string(sv.substr(currIndex, StringLength::FREQUENT_TRADER_ID*2)));
+                    repeatingGroups.at(i).repeatingOptionalBitfields.frequentTraderId = frequentTraderId;
+                    currIndex += (StringLength::FREQUENT_TRADER_ID*2);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void Decoder::handleRepeatingOptionalGroups() {
@@ -123,4 +187,8 @@ uint64_t Decoder::hexLittleToUint64(const std::string& hex) {
     return (temp >> 56) | ((temp >> 40) & 0xFF00) | ((temp >> 24) & 0xFF0000) |
            ((temp >> 8) & 0xFF000000) | ((temp << 8) & 0xFF00000000) |
            ((temp << 24) & 0xFF0000000000) | ((temp << 40) & 0xFF000000000000) | (temp << 56);
+}
+
+char Decoder::hexToChar(std::string_view hex) {
+    return static_cast<char>(std::stoul(std::string(hex), nullptr, 16));
 }

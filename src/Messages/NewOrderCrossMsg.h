@@ -95,7 +95,23 @@ enum class BitfieldIndex2 : uint8_t {
     CLEARING_OPTIONAL_DATA = 128
 };
 
+enum class BitfieldIndex3 : uint8_t {
+    CLIENT_ID_ATTR = 1,
+    EQUITY_TRADE_PRICE = 2,
+    EQUITY_TRADE_SIZE = 4,
+    EQUITY_TRADE_VENUE = 8,
+    EQUITY_TRANSACT_TIME = 16,
+    EQUITY_BUY_CLEARING_FIRM = 32,
+    EQUITY_SELL_CLEARING_FIRM = 64,
+    SESSION_ELIGIBILITY = 128
+};
 
+enum class BitfieldIndex4 : uint8_t {
+    COMPRESSION = 1,
+    ORS = 2,
+    FREQUENT_TRADER_ID = 4
+    //rest are just reserve bits and not used
+};
 
 enum class AutoMatch : char {
     DISABLED = '0',
@@ -108,14 +124,6 @@ enum class AutoMatch : char {
 enum class LastPriority : char {
     DISABLED = '0',
     ENABLED = '1',
-};
-
-enum class BitfieldIndex3 : size_t {
-    NONE = 0
-};
-
-enum class BitfieldIndex4 : size_t {
-    NONE = 0
 };
 
 struct NewOrderCrossBitfield {
@@ -231,7 +239,15 @@ public:
     void setGroupCount(const uint16_t groupCount) {this->groupCount = groupCount;}
 
 private:
+    //helper varibales
     const std::string stringPayload;
+    size_t numberOfFieldsInRepeatingFields;
+
+public:
+    //helper functions
+    size_t getNumberOfFieldsInRepeatingFields() {return this->numberOfFieldsInRepeatingFields;}
+    void setNumberOfFieldsInRepeatingFields(const size_t numberOfFieldsInRepeatingFields) {this->numberOfFieldsInRepeatingFields = numberOfFieldsInRepeatingFields;}
+
 };
 
 
