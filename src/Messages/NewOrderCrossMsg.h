@@ -73,7 +73,7 @@ enum class PreventMatch : char {
     NONE = '0'
 };
 
-enum class BitfieldIndex1 : size_t {
+enum class BitfieldIndex1 : uint8_t {
     SYMBOL = 1,
     MATURITY_DATE = 2,
     STRIKE_PRICE = 4,
@@ -84,7 +84,7 @@ enum class BitfieldIndex1 : size_t {
     PREVENT_MATCH = 128
 };
 
-enum class BitfieldIndex2 : size_t {
+enum class BitfieldIndex2 : uint8_t {
     AUTO_MATCH = 1,
     AUTO_MATCH_PRICE = 2,
     LAST_PRIORITY = 4,
@@ -94,6 +94,8 @@ enum class BitfieldIndex2 : size_t {
     ROUTING_FIRM_ID = 64,
     CLEARING_OPTIONAL_DATA = 128
 };
+
+
 
 enum class AutoMatch : char {
     DISABLED = '0',
@@ -225,7 +227,8 @@ public:
     std::vector<NewOrderCrossBitfield>& getNewOrderCrossBitfields() {return this->newOrderCrossBitfields;}
     void setNewOrderCrossBitfields (const std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields) {this->newOrderCrossBitfields = newOrderCrossBitfields;}
 
-
+    uint16_t getGroupCount() {return this->groupCount;}
+    void setGroupCount(const uint16_t groupCount) {this->groupCount = groupCount;}
 
 private:
     const std::string stringPayload;

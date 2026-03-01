@@ -23,22 +23,23 @@ void Decoder::initiateDecoder() {
 void Decoder::handleStartOfMessage() {
     std::string_view sv(payload);
 
-    uint16_t messageLength = hexLittleToUint16(std::string(sv.substr(4 + currOffset, 4)));
+    uint16_t messageLength = hexLittleToUint16(std::string(sv.substr(4, 4)));
     newOrderCrossMessageFields.setSequenceNumber(messageLength);
 
-    uint32_t sequenceNumber = hexLittleToUint32(std::string(sv.substr(12 + currOffset, 8)));
+    uint32_t sequenceNumber = hexLittleToUint32(std::string(sv.substr(12, 8)));
     newOrderCrossMessageFields.setSequenceNumber(sequenceNumber);
 
-    newOrderCrossMessageFields.setCrossId(hexToChars<20>(sv.substr(20 + currOffset, 40)));
 
-    newOrderCrossMessageFields.setCrossType(hexToChars<1>(sv.substr(60 + currOffset, 2)));
+    newOrderCrossMessageFields.setCrossId(hexToChars<20>(sv.substr(20, 40)));
 
-    newOrderCrossMessageFields.setCrossPrioritization(hexToChars<1>(sv.substr(62 + currOffset, 2)));
+    newOrderCrossMessageFields.setCrossType(hexToChars<1>(sv.substr(60, 2)));
 
-    uint64_t price = hexLittleToUint64(std::string(sv.substr(64 + currOffset, 16)));
+    newOrderCrossMessageFields.setCrossPrioritization(hexToChars<1>(sv.substr(62, 2)));
+
+    uint64_t price = hexLittleToUint64(std::string(sv.substr(64, 16)));
     newOrderCrossMessageFields.setPrice(price);
 
-    uint32_t orderQuantity = hexLittleToUint32(std::string(sv.substr(80 + currOffset, 8)));
+    uint32_t orderQuantity = hexLittleToUint32(std::string(sv.substr(80, 8)));
     newOrderCrossMessageFields.setOrderQuantity(orderQuantity);
 
     currIndex += 88;
@@ -48,17 +49,47 @@ void Decoder::handleNumberOfNewOrderBitfields() {
     std::string_view sv(payload);
 
     uint8_t numberOfNewOrderCrossBitfields = hexToUint8 (std::string(sv.substr(88, 2)));
-    this->currOffset = numberOfNewOrderCrossBitfields * 2;
     newOrderCrossMessageFields.setNumberOfNewOrderCrossBitfields (numberOfNewOrderCrossBitfields);
+    currIndex += 2;
 
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
     for (int i{}; i < numberOfNewOrderCrossBitfields; ++i) {
         uint8_t bitfield = hexToUint8 (std::string(sv.substr(currIndex + i * 2, 2)));
         newOrderCrossBitfields.push_back ({bitfield});
+        currIndex += 2;
     }
 }
 
-void Decoder::handleRepeatingGroups() {
+void Decoder::handleRepeatingGroups() { //prepare for hell
+    std::string_view sv(payload);
+
+    uint16_t groupLength = hexLittleToUint16(std::string(sv.substr(currIndex, 4)));
+    newOrderCrossMessageFields.setGroupCount(groupLength);
+    currIndex += 4;
+
+    std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
+    std::vector<uint8_t> includedOptionalBitfields;
+    std::vector<uint8_t> matchedBitfields;
+    for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
+        includedOptionalBitfields.push_back(newOrderCrossBitfield.bitfield);
+    }
+
+    for (int i{}; i < includedOptionalBitfields.size(); ++i) {
+        //bitfield byte index 1
+        if (i == 0) {
+            for (const auto& bitfield : BitfieldIndex1Values::values) {
+                if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
+                    matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
+                }
+            }
+        } else {
+            for (const auto& bitfield : BitfieldIndex2Values::values) {
+                if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
+                    matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
+                }
+            }
+        }
+    }
 
 }
 
