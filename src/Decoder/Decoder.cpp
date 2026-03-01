@@ -70,19 +70,20 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
     std::vector<uint8_t> includedOptionalBitfields;
     std::vector<uint8_t> matchedBitfields;
+
     for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
         includedOptionalBitfields.push_back(newOrderCrossBitfield.bitfield);
     }
 
     for (int i{}; i < includedOptionalBitfields.size(); ++i) {
-        //bitfield byte index 1
+        //bitfield byte 1
         if (i == 0) {
             for (const auto& bitfield : BitfieldIndex1Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
                     matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
-        } else {
+        } else { //bitfield byte 2
             for (const auto& bitfield : BitfieldIndex2Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
                     matchedBitfields.push_back(static_cast<uint8_t>(bitfield));
@@ -90,6 +91,8 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
             }
         }
     }
+
+    for (int i {}; i < )
 
 }
 
