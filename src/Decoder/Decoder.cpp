@@ -16,7 +16,6 @@ void Decoder::initiateDecoder() {
     handleStartOfMessage();
     handleNumberOfNewOrderBitfields();
     handleRepeatingGroups();
-    handleRepeatingOptionalGroups();
     handleNonRepeatingOptionalGroups();
 }
 
@@ -71,6 +70,8 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
     std::vector<uint8_t> includedOptionalBitfields;
     std::vector<uint8_t> matchedBitfields1; //use this for repeating groups at the end in switch statement
     std::vector<uint8_t> matchedBitfields2;
+    std::vector<uint8_t> matchedBitfields3;
+    std::vector<uint8_t> matchedBitfields4;
 
     //adds the bitfield values into included optional bitfields
     for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
@@ -87,15 +88,18 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
                     matchedBitfields1.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
-        } else { //bitfield byte 2
+        } else if (i == 1) { //bitfield byte 2
             for (const auto& bitfield : BitfieldIndex2Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
                     matchedBitfields2.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
+        } else if (i == 2) {
+
+        } else {
+
         }
     }
-
 
     std::vector<RepeatingGroup> repeatingGroups;
     for (int i{}; i < groupLength; ++i) {
@@ -123,7 +127,8 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
         repeatingGroups.at(i).giveUpFirmId = giveUpFirmId;
         currIndex += (StringLength::GIVE_UP_FIRM_ID*2);
 
-        for (const auto& bitfield : matchedBitfields1) {
+        //FILL in optional bitfields
+        for (const auto& bitfield : matchedBitfields2) {
             switch (bitfield) {
                 case static_cast<uint8_t>(BitfieldIndex2::ACCOUNT): {
                     std::array<char, StringLength::ACCOUNT> account = hexToChars<StringLength::ACCOUNT>(std::string(sv.substr(currIndex, StringLength::ACCOUNT*2)));
@@ -149,23 +154,22 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
                     currIndex += (StringLength::CLEARING_OPTIONAL_DATA*2);
                     break;
                 }
-                case static_cast<uint8_t>(BitfieldIndex4::FREQUENT_TRADER_ID): {
-                    std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId = hexToChars<StringLength::FREQUENT_TRADER_ID>(std::string(sv.substr(currIndex, StringLength::FREQUENT_TRADER_ID*2)));
-                    repeatingGroups.at(i).repeatingOptionalBitfields.frequentTraderId = frequentTraderId;
-                    currIndex += (StringLength::FREQUENT_TRADER_ID*2);
-                    break;
-                }
+            }
+        }
+
+        //need this in seperate loop because it's Byte 4 index
+        for (const auto& bitfield : matchedBitfields4) {
+            if (bitfield == static_cast<uint8_t>(BitfieldIndex4::FREQUENT_TRADER_ID)) {
+                std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId = hexToChars<StringLength::FREQUENT_TRADER_ID>(std::string(sv.substr(currIndex, StringLength::FREQUENT_TRADER_ID*2)));
+                repeatingGroups.at(i).repeatingOptionalBitfields.frequentTraderId = frequentTraderId;
+                currIndex += (StringLength::FREQUENT_TRADER_ID*2);
+                break;
             }
         }
     }
 }
 
-void Decoder::handleRepeatingOptionalGroups() {
-
-}
-
 void Decoder::handleNonRepeatingOptionalGroups() {
-
 }
 
 uint8_t Decoder::hexToUint8(const std::string& hex) {

@@ -42,8 +42,7 @@ private:
 
     void handleStartOfMessage(); //rows 1-10 **beginning message format
     void handleNumberOfNewOrderBitfields(); //rows 11-12 (really n) **bitfields format
-    void handleRepeatingGroups(); //13-18 **repeating groups mandatory format
-    void handleRepeatingOptionalGroups(); //19-23 **repeating optional groups
+    void handleRepeatingGroups(); //13-23 **repeating groups mandatory format
     void handleNonRepeatingOptionalGroups(); //24 **non-repeating optional groups
 
     uint8_t hexToUint8(const std::string &hex);

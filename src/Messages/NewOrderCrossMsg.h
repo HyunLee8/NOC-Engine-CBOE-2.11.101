@@ -22,6 +22,10 @@ namespace StringLength {
     constexpr size_t TARGET_PARTY_ID = 4;
     constexpr size_t PREVENT_MATCH = 3;
     constexpr size_t ROUTING_FIRM_ID = 4;
+    constexpr size_t CLIENT_ID_ATTR = 4;
+    constexpr size_t EQUITY_BUY_CLEARING_FIRM = 4;
+    constexpr size_t EQUITY_SELL_CLEARING_FIRM = 4;
+    constexpr size_t ORS = 1;
 }
 
 enum class CrossTypes : char {
@@ -126,6 +130,33 @@ enum class LastPriority : char {
     ENABLED = '1',
 };
 
+enum class EquityTradeVenue : char {
+    NYSE_AMERICAN = 'A',
+    NASDAQ_TEXAS = 'B',
+    NYSE_NATIONAL = 'C',
+    INVESTORS_EXCHANGE = 'I',
+    CBOE_EDGA_EXCHANGE = 'J',
+    CBOE_EDGX_EXCHANGE = 'K',
+    CHX = 'M',
+    NYSE = 'N',
+    NYSE_ARCO = 'P',
+    NASDAQ = 'Q',
+    NASDAQ_PSX = 'X',
+    CBOE_BYX_EXCHANGE = 'Y',
+    CBOE_BZX_EXCHANGE = 'Z'
+};
+
+enum class SessionEligibility : char {
+    REGULAR = 'R',
+    GLOBAL_REGULAR = 'A',
+    RTH_CURB_SESSION = 'B'
+};
+
+enum class Compression : char {
+    NO = 'N',
+    YES = 'Y'
+};
+
 struct NewOrderCrossBitfield {
     uint16_t bitfield;
 };
@@ -171,10 +202,22 @@ struct NonRepeatingOptionalField {
     AutoMatch autoMatch;
     uint64_t autoMatchPrice;
     LastPriority lastPriority;
-    std::array<char, StringLength::ACCOUNT> account;
-    uint32_t cmtaNumber;
-    std::array<char, StringLength::CLEARING_ACCOUNT> clearingAccount;
     std::array<char, StringLength::ROUTING_FIRM_ID> routingFirmId;
+
+    //bitfield byte #3
+    std::array<char, StringLength::CLIENT_ID_ATTR> clientIdAttr;
+    uint64_t equityTradePrice;
+    uint32_t equityTradeSize;
+    EquityTradeVenue equityTradeVenue;
+    uint64_t EquityTransactTime;
+    std::array<char, StringLength::EQUITY_BUY_CLEARING_FIRM> equityBuyClearingFirm;
+    std::array<char, StringLength::EQUITY_SELL_CLEARING_FIRM> equitySellClearingFirm;
+    SessionEligibility sessionEligibility;
+
+    //bitfield byte #4
+    Compression compression;
+    std::array<char, StringLength::ORS> ors;
+    std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId;
 };
 
 class NewOrderCrossMessageFields {
