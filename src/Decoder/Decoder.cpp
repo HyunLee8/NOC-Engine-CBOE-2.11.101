@@ -67,11 +67,6 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
     currIndex += 4;
 
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
-    std::vector<uint8_t> includedOptionalBitfields;
-    std::vector<uint8_t> matchedBitfields1; //use this for repeating groups at the end in switch statement
-    std::vector<uint8_t> matchedBitfields2;
-    std::vector<uint8_t> matchedBitfields3;
-    std::vector<uint8_t> matchedBitfields4;
 
     //adds the bitfield values into included optional bitfields
     for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
@@ -95,9 +90,17 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
                 }
             }
         } else if (i == 2) {
-
+            for (const auto& bitfield : BitfieldIndex3Values::values) {
+                if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
+                    matchedBitfields3.push_back(static_cast<uint8_t>(bitfield));
+                }
+            }
         } else {
-
+            for (const auto& bitfield : BitfieldIndex4Values::values) {
+                if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
+                    matchedBitfields4.push_back(static_cast<uint8_t>(bitfield));
+                }
+            }
         }
     }
 
@@ -154,6 +157,7 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
                     currIndex += (StringLength::CLEARING_OPTIONAL_DATA*2);
                     break;
                 }
+                default: ;
             }
         }
 
@@ -167,9 +171,55 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
             }
         }
     }
+
+    //sets entire vector we made to that
+    newOrderCrossMessageFields.setRepeatingGroups(repeatingGroups);
 }
 
 void Decoder::handleNonRepeatingOptionalGroups() {
+    NonRepeatingOptionalField nonRepeatingOptionalFields;
+
+    std::string_view sv(payload);
+    for (const auto& bitfield : matchedBitfields1) {
+        switch (bitfield) {
+            case static_cast<uint8_t>(BitfieldIndex1::SYMBOL): {
+                std::array<char, StringLength::SYMBOL> symbol = hexToChars<StringLength::SYMBOL>(std::string(sv.substr(currIndex, StringLength::SYMBOL*2)));
+                nonRepeatingOptionalFields.symbol = symbol;
+                currIndex += (StringLength::SYMBOL*2);
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::MATURITY_DATE): {
+                uint32_t maturityDate = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+                nonRepeatingOptionalFields.maturityDate = maturityDate;
+                currIndex += 8;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::STRIKE_PRICE): {
+                uint64_t strikePrice = hexLittleToUint64(std::string(sv.substr(currIndex, 16)));
+                nonRepeatingOptionalFields.strikePrice = strikePrice;
+                currIndex += 16;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::PUT_OR_CALL): {
+                char putOrCall = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.putOrCall = static_cast<PutOrCall>(putOrCall);
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::EXEC_INSTRUCTION): {
+                char execInstruction = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.execInst = execInstruction;
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::ATTRIBUTED_QUOTE): {
+                char attributedQuote = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.attributedQuote = static_cast<AttributedQuote>(attributedQuote);
+                currIndex += 2;
+                break;
+            }
+        }
+    }
 }
 
 uint8_t Decoder::hexToUint8(const std::string& hex) {

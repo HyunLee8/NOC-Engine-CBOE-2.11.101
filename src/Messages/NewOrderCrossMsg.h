@@ -189,7 +189,7 @@ struct RepeatingGroup {
 struct NonRepeatingOptionalField {
     //bitfield byte #1
     std::array<char, StringLength::SYMBOL> symbol;
-    std::string maturityDate;
+    uint32_t maturityDate;
     uint64_t strikePrice;
     PutOrCall putOrCall;
     char execInst;
@@ -280,6 +280,9 @@ public:
 
     uint16_t getGroupCount() {return this->groupCount;}
     void setGroupCount(const uint16_t groupCount) {this->groupCount = groupCount;}
+
+    std::vector<RepeatingGroup>& getRepeatingGroups() {return this->repeatingGroups;}
+    void setRepeatingGroups(const std::vector<RepeatingGroup>& repeatingGroups) {this->repeatingGroups = repeatingGroups;}
 
 private:
     //helper varibales

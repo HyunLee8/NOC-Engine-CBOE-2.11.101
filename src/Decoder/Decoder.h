@@ -29,12 +29,39 @@ namespace BitfieldIndex2Values {
     };
 }
 
+namespace BitfieldIndex3Values {
+    static constexpr BitfieldIndex3 values[] = {
+        BitfieldIndex3::CLIENT_ID_ATTR,
+        BitfieldIndex3::EQUITY_TRADE_PRICE,
+        BitfieldIndex3::EQUITY_TRADE_SIZE,
+        BitfieldIndex3::EQUITY_TRADE_VENUE,
+        BitfieldIndex3::EQUITY_TRANSACT_TIME,
+        BitfieldIndex3::EQUITY_BUY_CLEARING_FIRM,
+        BitfieldIndex3::EQUITY_SELL_CLEARING_FIRM,
+        BitfieldIndex3::SESSION_ELIGIBILITY
+    };
+}
+
+namespace BitfieldIndex4Values {
+    static constexpr BitfieldIndex4 values[] = {
+        BitfieldIndex4::COMPRESSION,
+        BitfieldIndex4::ORS,
+        BitfieldIndex4::FREQUENT_TRADER_ID
+    };
+}
+
 class Decoder {
 public:
     Decoder(const std::string &hexPayload);
     void initiateDecoder();
 
 private:
+    std::vector<uint8_t> matchedBitfields1; //use this for repeating groups at the end in switch statement
+    std::vector<uint8_t> matchedBitfields2;
+    std::vector<uint8_t> matchedBitfields3;
+    std::vector<uint8_t> matchedBitfields4;
+    std::vector<uint8_t> includedOptionalBitfields;
+
     std::string payload;
     size_t currIndex;
     size_t currOffset;
