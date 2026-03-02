@@ -1,4 +1,4 @@
-# NOC Engine 2.11.99
+# NOC Engine 2.11.101
 
 This is a Low Latency new order cross parser for a Binary Order Entry Protocol Engine inspired from CBOE's 2.11.101 specifications. The purpose of this program is to let two parties trade simulataneously exchange stocks or in other words the broker and firm represent the buyer and the seller. NOC is great because it can avoid uncessary costs, both parties agree on price upfront, and promotes fairness. Apart from its counter part the FIX8 Engine, the binary protocol is mainly used in High Frequency Trading firms who speed over uniformity or are exchange specific to CBOE.
 
