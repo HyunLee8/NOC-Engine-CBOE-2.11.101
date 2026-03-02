@@ -73,10 +73,6 @@ enum class AttributedQuote : char {
     CLEARING_CLIENT = 'Z'
 };
 
-enum class PreventMatch : char {
-    NONE = '0'
-};
-
 enum class BitfieldIndex1 : uint8_t {
     SYMBOL = 1,
     MATURITY_DATE = 2,
@@ -195,7 +191,7 @@ struct NonRepeatingOptionalField {
     char execInst;
     AttributedQuote attributedQuote;
     std::array<char, StringLength::TARGET_PARTY_ID> targetPartyId;
-    PreventMatch preventMatch;
+    std::array<char, StringLength::PREVENT_MATCH> preventMatch;
 
     //bitfield byte #2
     //LAST PICKUP HERE ^^^^
@@ -209,7 +205,7 @@ struct NonRepeatingOptionalField {
     uint64_t equityTradePrice;
     uint32_t equityTradeSize;
     EquityTradeVenue equityTradeVenue;
-    uint64_t EquityTransactTime;
+    uint64_t equityTransactTime;
     std::array<char, StringLength::EQUITY_BUY_CLEARING_FIRM> equityBuyClearingFirm;
     std::array<char, StringLength::EQUITY_SELL_CLEARING_FIRM> equitySellClearingFirm;
     SessionEligibility sessionEligibility;
@@ -217,7 +213,6 @@ struct NonRepeatingOptionalField {
     //bitfield byte #4
     Compression compression;
     std::array<char, StringLength::ORS> ors;
-    std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId;
 };
 
 class NewOrderCrossMessageFields {

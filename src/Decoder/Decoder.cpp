@@ -218,6 +218,117 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 currIndex += 2;
                 break;
             }
+            case static_cast<uint8_t>(BitfieldIndex1::TARGET_PARTY_ID): {
+                std::array<char, StringLength::TARGET_PARTY_ID> targetPartyId = hexToChars<StringLength::TARGET_PARTY_ID>(std::string(sv.substr(currIndex, StringLength::TARGET_PARTY_ID*2)));
+                nonRepeatingOptionalFields.targetPartyId = targetPartyId;
+                currIndex += (StringLength::TARGET_PARTY_ID*2);
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex1::PREVENT_MATCH): {
+                std::array<char, StringLength::PREVENT_MATCH> preventMatch = hexToChars<StringLength::PREVENT_MATCH>(std::string(sv.substr(currIndex, StringLength::PREVENT_MATCH*2)));
+                nonRepeatingOptionalFields.preventMatch = preventMatch;
+                currIndex += (StringLength::PREVENT_MATCH*2);
+                break;
+            }
+        }
+    }
+
+    for (const auto& bitfield : matchedBitfields2) {
+        switch (bitfield) {
+            case static_cast<uint8_t>(BitfieldIndex2::AUTO_MATCH): {
+                char autoMatch = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.autoMatch = static_cast<AutoMatch>(autoMatch);
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex2::AUTO_MATCH_PRICE): {
+                uint64_t autoMatchPrice = hexLittleToUint64(std::string(sv.substr(currIndex, 16)));
+                nonRepeatingOptionalFields.autoMatchPrice = autoMatchPrice;
+                currIndex += 16;
+            }
+            case static_cast<uint8_t>(BitfieldIndex2::LAST_PRIORITY): {
+                char lastPriority = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.lastPriority = static_cast<LastPriority>(lastPriority);
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex2::ROUTING_FIRM_ID): {
+                std::array<char, StringLength::ROUTING_FIRM_ID> routingFirmId = hexToChars<StringLength::ROUTING_FIRM_ID>(std::string(sv.substr(currIndex, StringLength::ROUTING_FIRM_ID*2)));
+                nonRepeatingOptionalFields.routingFirmId = routingFirmId;
+                currIndex += (StringLength::ROUTING_FIRM_ID*2);
+                break;
+            }
+        }
+    }
+
+    for (const auto& bitfield : matchedBitfields3) {
+        switch (bitfield) {
+            case static_cast<uint8_t>(BitfieldIndex3::CLIENT_ID_ATTR): {
+                std::array<char, StringLength::CLIENT_ID_ATTR> clientIdAttr = hexToChars<StringLength::CLIENT_ID_ATTR>(std::string(sv.substr(currIndex, StringLength::CLIENT_ID_ATTR*2)));
+                nonRepeatingOptionalFields.clientIdAttr = clientIdAttr;
+                currIndex += (StringLength::CLIENT_ID_ATTR*2);
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_TRADE_PRICE): {
+                uint64_t equityTradePrice = hexLittleToUint64(std::string(sv.substr(currIndex, 16)));
+                nonRepeatingOptionalFields.equityTradePrice = equityTradePrice;
+                currIndex += 16;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_TRADE_SIZE): {
+                uint32_t equityTradeSize = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+                nonRepeatingOptionalFields.equityTradeSize = equityTradeSize;
+                currIndex += 8;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_TRADE_VENUE): {
+                char equityTradeVenue = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.equityTradeVenue = static_cast<EquityTradeVenue>(equityTradeVenue);
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_TRANSACT_TIME): {
+                uint64_t equityTransactTime = hexLittleToUint64(std::string(sv.substr(currIndex, 16)));
+                nonRepeatingOptionalFields.equityTransactTime = equityTransactTime;
+                currIndex += 16;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_BUY_CLEARING_FIRM): {
+                std::array<char, StringLength::EQUITY_BUY_CLEARING_FIRM> buyClearingFirm = hexToChars<StringLength::EQUITY_BUY_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_BUY_CLEARING_FIRM*2)));
+                nonRepeatingOptionalFields.equityBuyClearingFirm = buyClearingFirm;
+                currIndex += (StringLength::EQUITY_BUY_CLEARING_FIRM*2);
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::EQUITY_SELL_CLEARING_FIRM): {
+                std::array<char, StringLength::EQUITY_SELL_CLEARING_FIRM> sellClearingFirm = hexToChars<StringLength::EQUITY_SELL_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_SELL_CLEARING_FIRM*2)));
+                nonRepeatingOptionalFields.equitySellClearingFirm = sellClearingFirm;
+                currIndex += (StringLength::EQUITY_SELL_CLEARING_FIRM*2);
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex3::SESSION_ELIGIBILITY): {
+                char sessionEligibility = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.sessionEligibility = static_cast<SessionEligibility>(sessionEligibility);
+                currIndex += 2;
+                break;
+            }
+        }
+
+    }
+
+    for (const auto& bitfield : matchedBitfields4) {
+        switch (bitfield) {
+            case static_cast<uint8_t>(BitfieldIndex4::COMPRESSION): {
+                char compression = hexToChar(std::string(sv.substr(currIndex, 2)));
+                nonRepeatingOptionalFields.compression = static_cast<Compression>(compression);
+                currIndex += 2;
+                break;
+            }
+            case static_cast<uint8_t>(BitfieldIndex4::ORS): {
+                std::array<char, StringLength::ORS> ors = hexToChars<StringLength::ORS>(std::string(sv.substr(currIndex, StringLength::ORS*2)));
+                nonRepeatingOptionalFields.ors = ors;
+                currIndex += (StringLength::ORS*2);
+                break;
+            }
         }
     }
 }
