@@ -279,6 +279,9 @@ public:
     std::vector<RepeatingGroup>& getRepeatingGroups() {return this->repeatingGroups;}
     void setRepeatingGroups(const std::vector<RepeatingGroup>& repeatingGroups) {this->repeatingGroups = repeatingGroups;}
 
+    NonRepeatingOptionalField getNonRepeatingOptionalFields() {return this->nonRepeatingOptionalFields;}
+    void setNonRepeatingOptionalField(const NonRepeatingOptionalField nonRepeatingOptionalField) {this->nonRepeatingOptionalFields = nonRepeatingOptionalField;}
+
 private:
     //helper varibales
     const std::string stringPayload;

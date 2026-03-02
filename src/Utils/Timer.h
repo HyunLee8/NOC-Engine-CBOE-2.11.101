@@ -21,6 +21,11 @@ public:
         return duration.count();
     }
 
+    double getTimeSeconds() {
+        auto duration = std::chrono::duration<double>(endTime - startTime);
+        return duration.count();
+    }
+
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> endTime;

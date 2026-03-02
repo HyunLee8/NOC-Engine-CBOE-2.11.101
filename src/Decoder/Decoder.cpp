@@ -105,6 +105,7 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
     }
 
     std::vector<RepeatingGroup> repeatingGroups;
+    repeatingGroups.resize(groupLength);
     for (int i{}; i < groupLength; ++i) {
         char side = hexToChar(std::string(sv.substr(currIndex, 2)));
         repeatingGroups.at(i).side = static_cast<Side>(side);
@@ -312,7 +313,6 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 break;
             }
         }
-
     }
 
     for (const auto& bitfield : matchedBitfields4) {
@@ -331,6 +331,8 @@ void Decoder::handleNonRepeatingOptionalGroups() {
             }
         }
     }
+
+
 }
 
 uint8_t Decoder::hexToUint8(const std::string& hex) {

@@ -5,8 +5,7 @@
 #include "../src/Utils/Timer.h"
 
 std::string readHexPayload(const std::string &hexPayload) {
-    std::string filePath = std::string("../docs/") + hexPayload;
-    std::ifstream file(filePath);
+    std::ifstream file(hexPayload);
 
     if(!file.is_open()) {
         std::cout << "Failed to open file" << '\n';
@@ -16,7 +15,6 @@ std::string readHexPayload(const std::string &hexPayload) {
     std::string fileContent;
     while(std::getline(file, str)) {
         fileContent += str;
-        fileContent.push_back('\n');
     }
 
     std::cout << fileContent << '\n';
@@ -30,16 +28,13 @@ void runProcess(Decoder& decoder) {
     timer.start();
     decoder.initiateDecoder();
     timer.stop();
-    double decodingTime = timer.getTime();
+    std::cout << "Decoding Time: " <<std::fixed << std::setprecision(9) << timer.getTimeSeconds() << " seconds\n";
+
 
     //timer.start();
     //encoder.initiateEncoder();
     //timer.stop();
     //double encodingTime = timer.getTime();
-
-}
-
-void displayOrder() {
 
 }
 
@@ -54,7 +49,6 @@ int main(int argc, char* arg[]) {
     std::string payload = readHexPayload(arg[1]);
     Decoder decoder(payload);
     runProcess(decoder);
-    displayOrder();
 
     return 0;
 }

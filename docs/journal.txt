@@ -1,7 +1,19 @@
 Trashed old attempt because too messy 
 **Also it updated to .100
 
-02.24.2025
+02.24.2026
 - got all the way up to making the 
   optional bitfields for byte 1.
   work on byte2 next time.
+
+03.01.2026
+- i forgot to take notes along the way but
+  i just tested the decoder and got and
+  did a performance test
+
+  Decoding time: 1.1208e-05
+
+  **Pretty average using stoul
+    instead of memcpy which
+    would probably be around
+    less than a microsecond
