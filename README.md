@@ -7,10 +7,6 @@ This is a Low Latency new order cross parser for a Binary Order Entry Protocol E
 The first draft of the decoder is complete and it successfully parses raw BOE NewOrderCross messages including all mandatory fields, repeating groups, and optional bitfields. I'm going to have to optimize this ALOT because 11 microseconds is pretty mid. Also the way I did it was by converting the string message in Hex however it would be more traditional to just grab the data in hex and just use memcpy but I guess it's too late now. Maybe later down the road I will chage it if I'm motivated. If i just used raw bytes the decode time would be around 1 microsecond but im dumb and made everything harder. Things to do next is probably format the NewOrderCrossMessageField datastructure and organize it into JSON so users can see the order output which will not be included in decode time. 
 r utility for benchmarking decode performance
 
-## Why I'm making this
-
-'ve never really made a huge program in C++ so I'm an amateur in low level. I've gained a lot of interest in working with lower level projects lately mainly due to classes I'm taking which actually helped me a ton understand the Logic that makes up C++ -> assembly. This also a way just to practice how to make modular code from a program that can very easily end up as sphagetti code which can prepare me for future projects.
-
 ## Performance
 
 Current decode time on a NewOrderCross message: 0.000011208 seconds.
