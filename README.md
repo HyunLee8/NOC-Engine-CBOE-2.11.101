@@ -9,7 +9,7 @@ r utility for benchmarking decode performance
 
 ## Why I'm making this
 
-I like have high cortisol and suffering as a C++ larper. JK. I've never really made a huge program in C++ so I'm a noob in low level. I've gained a lot of interest in working with lower level projects lately mainly due to classes I'm taking which actually helped me a ton understand the Logic that makes up C++ -> assembly. This also a way just to practice how to make modular code from a program that can very easily end up as sphagetti code which can prepare me for future projects.
+'ve never really made a huge program in C++ so I'm an amateur in low level. I've gained a lot of interest in working with lower level projects lately mainly due to classes I'm taking which actually helped me a ton understand the Logic that makes up C++ -> assembly. This also a way just to practice how to make modular code from a program that can very easily end up as sphagetti code which can prepare me for future projects.
 
 ## Performance
 
