@@ -13,7 +13,6 @@ public:
 
     void stop() {
         endTime = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
     }
 
     long long getTime() {

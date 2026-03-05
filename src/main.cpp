@@ -1,14 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "../src/Decoder/Decoder.h"
-#include "../src/Utils/Timer.h"
+#include <filesystem>
+#include <iomanip>
+#include "Decoder/Decoder.h"
+#include "Utils/Timer.h"
 
-std::string readHexPayload(const std::string &hexPayload) {
-    std::ifstream file(hexPayload);
+std::string readHexPayload(const std::filesystem::path& payloadPath) {
+    std::ifstream file(payloadPath);
 
     if(!file.is_open()) {
-        std::cout << "Failed to open file" << '\n';
+        throw std::runtime_error("Failed to open file");
     }
 
     std::string str;
@@ -17,7 +19,7 @@ std::string readHexPayload(const std::string &hexPayload) {
         fileContent += str;
     }
 
-    std::cout << fileContent << '\n';
+    std::cout << fileContent;
 
     return fileContent;
 }
@@ -28,27 +30,30 @@ void runProcess(Decoder& decoder) {
     timer.start();
     decoder.initiateDecoder();
     timer.stop();
-    std::cout << "Decoding Time: " <<std::fixed << std::setprecision(9) << timer.getTimeSeconds() << " seconds\n";
 
-
-    //timer.start();
-    //encoder.initiateEncoder();
-    //timer.stop();
-    //double encodingTime = timer.getTime();
-
+    std::cout << "\nDecoding Time: " <<std::fixed << std::setprecision(9) << timer.getTimeSeconds() << " seconds\n";
 }
 
+int main(int argc, char* argv[]) {
+    try {
+        if (argc < 2) {
+            throw std::runtime_error("Not enough arguments");
+        }
 
+        std::filesystem::path path = argv[1];
 
-int main(int argc, char* arg[]) {
-    if(argc < 2) {
-        std::cout << "Failed to run program" << '\n';
+        if (!std::filesystem::exists(path)) {
+            throw std::runtime_error("File not found");
+        }
+
+        std::string payload = readHexPayload(path);
+        Decoder decoder(payload);
+        runProcess(decoder);
+
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << '\n';
         return 1;
     }
-
-    std::string payload = readHexPayload(arg[1]);
-    Decoder decoder(payload);
-    runProcess(decoder);
 
     return 0;
 }

@@ -1,0 +1,87 @@
+
+Feedback 1 ~~ Overall decent
+
+You make good use of modern C++ (class enums, ranged based for loops etc.)
+and avoid things like raw new and unnecessary use of pointers.
+
+A few things I've noticed:
+
+You should avoid relative include paths ("../src/foo.hpp"). You already have src in your
+include path in CMake so you can just include the file directly (or fix your include path in CMake).
+
+Error message should go to std::cerr and I would probably use exceptions for fatal errors.
+If you pass your program a non-existent file it will tell the user (on standard out) that
+the file doesn't exist and continue to try to read it anyway. Instead you could consider
+just throwing and catching std::exception in main.
+
+You have quite a few unnamed constants, for example currIndex += 88;. Maybe you could give 88 a
+reasonable name and use that the various places instead? It makes the code much easier to read.
+
+I think it looks like you have quite a few good habits. You might consider looking into making the
+decoder a (static) library in CMake and link your test and executable with that. It will improve
+compilation speeds and make things easier to structure later on.
+
+You could also consider looking into setting up a CI pipeline and maybe set it up to build on other
+platforms (like Windows if you feel masochistic enough).
+
+
+
+Feedback 2 ~~ needs major work (I got cooked)
+
+You haven't configured your build system properly.
+
+You have no understanding of streams, and it shows. In main.cpp you're extracting from a file into a
+string? And then what? You have to iterate over the string? You could have just iterated over the stream.
+You lack command of modern C++, because you use a string to represent the file path instead of an
+std::filesystem::path.
+
+std::cout << "Failed to open file" << '\n';
+Two insertions for what could be a single string literal? And to standard out, not standard error?
+
+//timer.start();
+//encoder.initiateEncoder();
+//timer.stop();
+//double encodingTime = timer.getTime();
+Do you normally leave garbage lying around? This won't impress CBOE.
+
+#pragma once
+This isn't standard or portable. You don't even need it in Timer.h because you cannot possibly include
+this header into multiple source files - you'd end up with a multiple definition error because all your
+implementation is in the header. This isn't a template class.
+
+public on the top and private on the bottom, a pre-C++98 standard coding convention. Classes are private
+by default. If you're working with a timer and chrono, then why is your timer class converting to less
+precise long long and double?
+
+//bitfield byte #1
+Your comments indicate more types you should be creating. Don't tell me in a comment what you can
+express in code. Don't tell me in a comment what the code tells me. Implementation tells us HOW, expressiveness
+tells us WHAT, and comments explain WHY. You want to raise the level of expressiveness, and then describe your
+solution in terms of that.
+
+class NewOrderCrossMessageFields {
+private:
+Redundant.
+
+uint16_t getMessageLength() {return this->messageLength;}
+void setMessageLength(const uint16_t messageLength) {this->messageLength = messageLength;}
+So you have a struct with extra steps. This is not encapsulation or abstraction. This is not an interface
+effectively any different than a struct with public members. These are not behaviors, and you're not
+enforcing any invariant.
+
+for (int i{}; i < includedOptionalBitfields.size(); ++i) {
+  //bitfield byte 1
+  if (i == 0) {
+No. This is mapping, use a map.
+
+case static_cast<uint8_t>(BitfieldIndex2::AUTO_MATCH):
+These are enums, you don't need to cast.
+
+This decoding code is very repetitive and should be reduced. A better data structure would be preferred.
+
+ I realized I came off harsh about streams at the top there. The rest is just terse. I don't mean to be,
+ but code reviews are big, even if they're small, and it's hard to go into in depth lessons on all the
+ points I've brought up. I've been writing C++ fro 37 years, I've worked on all manner of critical systems,
+ slot machines, trading platforms, cloud infrastructure, and now some plucky robots, but from my trading
+ experience I'm telling you they will demand excellence, and the way the market is today, the talent floor
+ is high. It's not inaccessible to you, you just need more practice and have to figure more of this stuff out.
