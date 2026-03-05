@@ -26,12 +26,12 @@ platforms (like Windows if you feel masochistic enough).
 
 
 
-Feedback 2 ~~ needs major work (I got cooked)
+Feedback 2 ~~ needs major work
 
 You haven't configured your build system properly.
 
 std::cout << "Failed to open file" << '\n';
-Two insertions for what could be a single string literal? And to standard out, not standard error?
+Two insertions for what could be a standard error?
 
 #pragma once
 This isn't standard or portable. You don't even need it in Timer.h because you cannot possibly include
