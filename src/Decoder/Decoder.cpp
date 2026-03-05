@@ -83,7 +83,7 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
                     matchedBitfields1.push_back(static_cast<uint8_t>(bitfield));
                 }
             }
-        } else if (i == 1) { //bitfield byte 2
+        } else if (i == 1) {
             for (const auto& bitfield : BitfieldIndex2Values::values) {
                 if (includedOptionalBitfields.at(i) & static_cast<uint8_t>(bitfield)) {
                     matchedBitfields2.push_back(static_cast<uint8_t>(bitfield));
