@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <iomanip>
 #include "Decoder/Decoder.h"
+#include "Messages/NewOrderCrossMsg.h"
+#include "Serialization/Serialization.h"
 #include "Utils/Timer.h"
 
 std::string readHexPayload(const std::filesystem::path& payloadPath) {
@@ -30,6 +32,11 @@ void runProcess(Decoder& decoder) {
     timer.start();
     decoder.initiateDecoder();
     timer.stop();
+
+    NewOrderCrossMessageFields NOCMF_ = decoder.getNextMessage();
+    Serializer serializer(NOCMF_);
+    serializer.parseMessage();
+    serializer.displayMessage();
 
     std::cout << "\nDecoding Time: " <<std::fixed << std::setprecision(9) << timer.getTimeSeconds() << " seconds\n";
 }

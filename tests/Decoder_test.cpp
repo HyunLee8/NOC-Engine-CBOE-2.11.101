@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/Decoder/Decoder.h"
+#include "Decoder/Decoder.h"
 
 class DecoderTest : public ::testing::Test {
 protected:

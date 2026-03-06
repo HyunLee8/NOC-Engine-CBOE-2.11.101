@@ -1,9 +1,8 @@
 #pragma once
 #include <vector>
-#include <variant>
 #include <chrono>
 #include <array>
-#include <unordered_map>
+#include <nlohmann/json.hpp>
 
 namespace StringLength {
     constexpr size_t CROSS_ID = 20;
@@ -159,8 +158,8 @@ struct NewOrderCrossBitfield {
 
 struct RepeatingOptionalBitfield {
     std::array<char, StringLength::ACCOUNT> account;
-    uint32_t cmtaNumber;
-    uint32_t clearingAccount;
+    std::optional<uint32_t>  cmtaNumber;
+    std::optional<uint32_t> clearingAccount;
     std::array<char, StringLength::CLEARING_OPTIONAL_DATA> clearingOptionalData;
     std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId;
 };
@@ -185,33 +184,33 @@ struct RepeatingGroup {
 struct NonRepeatingOptionalField {
     //bitfield byte #1
     std::array<char, StringLength::SYMBOL> symbol;
-    uint32_t maturityDate;
-    uint64_t strikePrice;
-    PutOrCall putOrCall;
-    char execInst;
-    AttributedQuote attributedQuote;
+    std::optional<uint32_t> maturityDate;
+    std::optional<uint64_t> strikePrice;
+    std::optional<PutOrCall> putOrCall;
+    std::optional<char> execInst;
+    std::optional<AttributedQuote> attributedQuote;
     std::array<char, StringLength::TARGET_PARTY_ID> targetPartyId;
     std::array<char, StringLength::PREVENT_MATCH> preventMatch;
 
     //bitfield byte #2
     //LAST PICKUP HERE ^^^^
-    AutoMatch autoMatch;
-    uint64_t autoMatchPrice;
-    LastPriority lastPriority;
+    std::optional<AutoMatch> autoMatch;
+    std::optional<uint64_t> autoMatchPrice;
+    std::optional<LastPriority> lastPriority;
     std::array<char, StringLength::ROUTING_FIRM_ID> routingFirmId;
 
     //bitfield byte #3
     std::array<char, StringLength::CLIENT_ID_ATTR> clientIdAttr;
-    uint64_t equityTradePrice;
-    uint32_t equityTradeSize;
-    EquityTradeVenue equityTradeVenue;
-    uint64_t equityTransactTime;
+    std::optional<uint64_t> equityTradePrice;
+    std::optional<uint32_t> equityTradeSize;
+    std::optional<EquityTradeVenue> equityTradeVenue;
+    std::optional<uint64_t> equityTransactTime;
     std::array<char, StringLength::EQUITY_BUY_CLEARING_FIRM> equityBuyClearingFirm;
     std::array<char, StringLength::EQUITY_SELL_CLEARING_FIRM> equitySellClearingFirm;
-    SessionEligibility sessionEligibility;
+    std::optional<SessionEligibility> sessionEligibility;
 
     //bitfield byte #4
-    Compression compression;
+    std::optional<Compression> compression;
     std::array<char, StringLength::ORS> ors;
 };
 
@@ -246,13 +245,17 @@ private:
 public:
     NewOrderCrossMessageFields(const std::string &payload);
 
+    uint8_t getMessageType() {return messageType;}
+
+    uint8_t getMatchingUnit() {return matchingUnit;}
+
     uint16_t getMessageLength() {return this->messageLength;}
     void setMessageLength(const uint16_t messageLength) {this->messageLength = messageLength;}
 
     uint32_t getSequenceNumber() {return this->sequenceNumber;}
     void setSequenceNumber(const uint16_t sequenceNumber) {this->sequenceNumber = sequenceNumber;}
 
-    std::array<char, StringLength::CROSS_ID>& getCrossId() {return this->crossId;}
+    std::string getCrossId() {return std::string(crossId.data(), strnlen(crossId.data(), crossId.size()));}
     void setCrossId(const std::array<char, StringLength::CROSS_ID>& crossId) {this->crossId = crossId;}
 
     std::array<char, StringLength::CROSS_TYPE>& getCrossType() {return this->crossType;}
@@ -294,6 +297,157 @@ public:
 
 };
 
+inline void to_json(nlohmann::ordered_json& j, const NewOrderCrossBitfield& b) {
+    j = nlohmann::json{{"bitfield", b.bitfield}};
+}
 
+inline void to_json(nlohmann::ordered_json& j, const RepeatingOptionalBitfield& r) {
+    j = nlohmann::ordered_json{
+        {"account", std::string(r.account.data(), strnlen(r.account.data(), r.account.size()))},
+        {"clearingOptionalData", std::string(r.clearingOptionalData.data(), strnlen(r.clearingOptionalData.data(), r.clearingOptionalData.size()))},
+        {"frequentTraderId", std::string(r.frequentTraderId.data(), strnlen(r.frequentTraderId.data(), r.frequentTraderId.size()))}
+    };
+    if (r.cmtaNumber) j["cmtaNumber"] = *r.cmtaNumber;
+    if (r.clearingAccount) j["clearingAccount"] = *r.clearingAccount;
+}
 
+inline void to_json(nlohmann::ordered_json& j, const RepeatingGroup& r) {
+    j = nlohmann::ordered_json{
+        {"side", r.side},
+        {"allocQuantity", r.allocQuantity},
+        {"clientOrderId", std::string(r.clientOrderId.data(), strnlen(r.clientOrderId.data(), r.clientOrderId.size()))},
+        {"capacity", r.capacity},
+        {"openClose", r.openClose},
+        {"giveUpFirmId", std::string(r.giveUpFirmId.data(), strnlen(r.giveUpFirmId.data(), r.giveUpFirmId.size()))},
+        {"repeatingOptionalBitfields", r.repeatingOptionalBitfields}
+    };
+}
+
+inline void to_json(nlohmann::ordered_json& j, const Side& s) {
+    switch(s) {
+        case Side::BUY: j = "BUY"; break;
+        case Side::SELL: j = "SELL"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const Capacity& c) {
+    switch(c) {
+        case Capacity::CUSTOMER:j = "CUSTOMER";break;
+        case Capacity::MARKET_MAKER:  j = "MARKET_MAKER"; break;
+        case Capacity::FIRM: j = "FIRM";  break;
+        case Capacity::PROFESSIONAL_CUSTOMER:j = "PROFESSIONAL_CUSTOMER";break;
+        case Capacity::AWAYMARKET_MAKER: j = "AWAYMARKET_MAKER";  break;
+        case Capacity::BROKER_DEALER: j = "BROKER_DEALER";break;
+        case Capacity::JOINT_BACK_OFFICE: j = "JOINT_BACK_OFFICE"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const OpenClose& o) {
+    switch(o) {
+        case OpenClose::OPEN: j = "OPEN"; break;
+        case OpenClose::CLOSE: j = "CLOSE"; break;
+        case OpenClose::NONE: j = "NONE";  break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const NonRepeatingOptionalField& f) {
+    auto addIfValid = [&](const char* data, size_t size, const std::string& key) {
+        std::string str(data, strnlen(data, size));
+        // Check every character is printable ASCII
+        bool valid = !str.empty() && std::all_of(str.begin(), str.end(), [](unsigned char c) {
+            return c >= 32 && c < 127;
+        });
+        if (valid) j[key] = str;
+    };
+
+    addIfValid(f.symbol.data(), f.symbol.size(), "symbol");
+    addIfValid(f.targetPartyId.data(), f.targetPartyId.size(), "targetPartyId");
+    addIfValid(f.preventMatch.data(), f.preventMatch.size(), "preventMatch");
+    addIfValid(f.routingFirmId.data(), f.routingFirmId.size(), "routingFirmId");
+    addIfValid(f.clientIdAttr.data(), f.clientIdAttr.size(), "clientIdAttr");
+    addIfValid(f.equityBuyClearingFirm.data(), f.equityBuyClearingFirm.size(), "equityBuyClearingFirm");
+    addIfValid(f.equitySellClearingFirm.data(), f.equitySellClearingFirm.size(), "equitySellClearingFirm");
+    addIfValid(f.ors.data(), f.ors.size(), "ors");
+
+    if (f.maturityDate) j["maturityDate"] = *f.maturityDate;
+    if (f.strikePrice) j["strikePrice"] = *f.strikePrice;
+    if (f.putOrCall) j["putOrCall"] = *f.putOrCall;
+    if (f.execInst) j["execInst"] = *f.execInst;
+    if (f.attributedQuote) j["attributedQuote"] = *f.attributedQuote;
+    if (f.autoMatch) j["autoMatch"] = *f.autoMatch;
+    if (f.autoMatchPrice) j["autoMatchPrice"] = *f.autoMatchPrice;
+    if (f.lastPriority) j["lastPriority"] = *f.lastPriority;
+    if (f.equityTradePrice) j["equityTradePrice"] = *f.equityTradePrice;
+    if (f.equityTradeSize) j["equityTradeSize"] = *f.equityTradeSize;
+    if (f.equityTradeVenue) j["equityTradeVenue"] = *f.equityTradeVenue;
+    if (f.equityTransactTime) j["equityTransactTime"] = *f.equityTransactTime;
+    if (f.sessionEligibility) j["sessionEligibility"] = *f.sessionEligibility;
+    if (f.compression) j["compression"] = *f.compression;
+}
+
+inline void to_json(nlohmann::ordered_json& j, const PutOrCall& p) {
+    switch(p) {
+        case PutOrCall::PUT: j = "PUT"; break;
+        case PutOrCall::CALL: j = "CALL"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const AttributedQuote& a) {
+    switch(a) {
+        case AttributedQuote::NO_FIRM_ID: j = "NO_FIRM_ID"; break;
+        case AttributedQuote::ATTRIBUTE_FIRM_ID: j = "ATTRIBUTE_FIRM_ID"; break;
+        case AttributedQuote::CLIENT_ID_ONLY: j = "CLIENT_ID_ONLY"; break;
+        case AttributedQuote::CLEARING_CLIENT: j = "CLEARING_CLIENT"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const AutoMatch& a) {
+    switch(a) {
+        case AutoMatch::DISABLED: j = "DISABLED"; break;
+        case AutoMatch::MARKET: j = "MARKET"; break;
+        case AutoMatch::LIMIT: j = "LIMIT"; break;
+        case AutoMatch::MARKET_NA: j = "MARKET_NA"; break;
+        case AutoMatch::LIMIT_NA: j = "LIMIT_NA"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const LastPriority& l) {
+    switch(l) {
+        case LastPriority::DISABLED: j = "DISABLED"; break;
+        case LastPriority::ENABLED:  j = "ENABLED"; break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const EquityTradeVenue& e) {
+    switch(e) {
+        case EquityTradeVenue::NYSE_AMERICAN: j = "NYSE_AMERICAN"; break;
+        case EquityTradeVenue::NASDAQ_TEXAS:j = "NASDAQ_TEXAS"; break;
+        case EquityTradeVenue::NYSE_NATIONAL: j = "NYSE_NATIONAL"; break;
+        case EquityTradeVenue::INVESTORS_EXCHANGE:j = "INVESTORS_EXCHANGE";break;
+        case EquityTradeVenue::CBOE_EDGA_EXCHANGE:j = "CBOE_EDGA_EXCHANGE";break;
+        case EquityTradeVenue::CBOE_EDGX_EXCHANGE:j = "CBOE_EDGX_EXCHANGE";break;
+        case EquityTradeVenue::CHX: j = "CHX"; break;
+        case EquityTradeVenue::NYSE:  j = "NYSE"; break;
+        case EquityTradeVenue::NYSE_ARCO: j = "NYSE_ARCO"; break;
+        case EquityTradeVenue::NASDAQ:  j = "NASDAQ"; break;
+        case EquityTradeVenue::NASDAQ_PSX: j = "NASDAQ_PSX"; break;
+        case EquityTradeVenue::CBOE_BYX_EXCHANGE:j = "CBOE_BYX_EXCHANGE";break;
+        case EquityTradeVenue::CBOE_BZX_EXCHANGE:j = "CBOE_BZX_EXCHANGE";break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const SessionEligibility& s) {
+    switch(s) {
+        case SessionEligibility::REGULAR:  j = "REGULAR"; break;
+        case SessionEligibility::GLOBAL_REGULAR:  j = "GLOBAL_REGULAR"; break;
+        case SessionEligibility::RTH_CURB_SESSION:j = "RTH_CURB_SESSION";break;
+    }
+}
+
+inline void to_json(nlohmann::ordered_json& j, const Compression& c) {
+    switch(c) {
+        case Compression::NO:  j = "NO"; break;
+        case Compression::YES: j = "YES"; break;
+    }
+}
 

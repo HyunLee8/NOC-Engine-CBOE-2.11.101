@@ -7,14 +7,28 @@ add_executable(MyProject
         src/main.cpp
         src/Decoder/decoder.cpp
         src/Messages/NewOrderCrossMsg.cpp
+        src/Serialization/Serialization.cpp
 )
 
 include(FetchContent)
+
 FetchContent_Declare(
         googletest
         URL https://github.com/google/googletest/archive/refs/heads/main.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(googletest)
+
+FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+target_link_libraries(MyProject
+        nlohmann_json::nlohmann_json
+)
 
 add_executable(MyProjectTests
         tests/decoder_test.cpp

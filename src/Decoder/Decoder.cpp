@@ -20,10 +20,16 @@ void Decoder::initiateDecoder() {
 }
 
 void Decoder::handleStartOfMessage() {
+
     std::string_view sv(payload);
 
+    uint16_t startOfMessage = hexLittleToUint16(std::string(sv.substr(0, 4)));
+    if (startOfMessage != 47802) {
+        throw std::invalid_argument("Invalid start of message");
+    }
+
     uint16_t messageLength = hexLittleToUint16(std::string(sv.substr(4, 4)));
-    newOrderCrossMessageFields.setSequenceNumber(messageLength);
+    newOrderCrossMessageFields.setMessageLength(messageLength);
 
     uint32_t sequenceNumber = hexLittleToUint32(std::string(sv.substr(12, 8)));
     newOrderCrossMessageFields.setSequenceNumber(sequenceNumber);
@@ -172,7 +178,6 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
             }
         }
     }
-
     //sets entire vector we made to that
     newOrderCrossMessageFields.setRepeatingGroups(repeatingGroups);
 }
@@ -331,8 +336,6 @@ void Decoder::handleNonRepeatingOptionalGroups() {
             }
         }
     }
-
-
 }
 
 uint8_t Decoder::hexToUint8(const std::string& hex) {

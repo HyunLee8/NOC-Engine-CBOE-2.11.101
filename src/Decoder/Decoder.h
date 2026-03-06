@@ -90,4 +90,9 @@ private:
 
     char hexToChar(std::string_view hex);
 
+public:
+    NewOrderCrossMessageFields& getNextMessage() {
+        return newOrderCrossMessageFields;
+    }
+
 };
