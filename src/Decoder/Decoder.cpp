@@ -1,13 +1,10 @@
-#include <iostream>
 #include <vector>
 #include <array>
-#include <sstream>
 #include <iomanip>
 #include <string>
-#include <cstdint>
 #include <string_view>
-#include <cstring>
-#include "Decoder.h"
+#include "Decoder/Decoder.h"
+#include "Utils/HexConversion.h"
 
 Decoder::Decoder(const std::string &hexPayload)
     : payload(hexPayload), currOffset(0), currIndex(0), newOrderCrossMessageFields(hexPayload){}
@@ -21,19 +18,16 @@ void Decoder::initiateDecoder() {
 
 void Decoder::handleStartOfMessage() {
 
-    std::string_view sv(payload);
+    const std::string_view sv(payload);
 
-    uint16_t startOfMessage = hexLittleToUint16(std::string(sv.substr(0, 4)));
-    if (startOfMessage != 47802) {
+    if (const uint16_t startOfMessage = hexLittleToUint16(std::string(sv.substr(0, 4))); startOfMessage != 47802) {
         throw std::invalid_argument("Invalid start of message");
     }
-
-    uint16_t messageLength = hexLittleToUint16(std::string(sv.substr(4, 4)));
+    const uint16_t messageLength = hexLittleToUint16(std::string(sv.substr(4, 4)));
     newOrderCrossMessageFields.setMessageLength(messageLength);
 
-    uint32_t sequenceNumber = hexLittleToUint32(std::string(sv.substr(12, 8)));
+    const uint32_t sequenceNumber = hexLittleToUint32(std::string(sv.substr(12, 8)));
     newOrderCrossMessageFields.setSequenceNumber(sequenceNumber);
-
 
     newOrderCrossMessageFields.setCrossId(hexToChars<20>(sv.substr(20, 40)));
 
@@ -41,38 +35,38 @@ void Decoder::handleStartOfMessage() {
 
     newOrderCrossMessageFields.setCrossPrioritization(hexToChars<1>(sv.substr(62, 2)));
 
-    uint64_t price = hexLittleToUint64(std::string(sv.substr(64, 16)));
+    const uint64_t price = hexLittleToUint64(std::string(sv.substr(64, 16)));
     newOrderCrossMessageFields.setPrice(price);
 
-    uint32_t orderQuantity = hexLittleToUint32(std::string(sv.substr(80, 8)));
+    const uint32_t orderQuantity = hexLittleToUint32(std::string(sv.substr(80, 8)));
     newOrderCrossMessageFields.setOrderQuantity(orderQuantity);
 
     currIndex += 88;
 }
 
 void Decoder::handleNumberOfNewOrderBitfields() {
-    std::string_view sv(payload);
+    const std::string_view sv(payload);
 
-    uint8_t numberOfNewOrderCrossBitfields = hexToUint8 (std::string(sv.substr(88, 2)));
+    const uint8_t numberOfNewOrderCrossBitfields = hexToUint8 (std::string(sv.substr(88, 2)));
     newOrderCrossMessageFields.setNumberOfNewOrderCrossBitfields (numberOfNewOrderCrossBitfields);
     currIndex += 2;
 
     std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
     for (int i{}; i < numberOfNewOrderCrossBitfields; ++i) {
-        uint8_t bitfield = hexToUint8(std::string(sv.substr(currIndex, 2)));
+        const uint8_t bitfield = hexToUint8(std::string(sv.substr(currIndex, 2)));
         newOrderCrossBitfields.push_back ({bitfield});
         currIndex += 2;
     }
 }
 
 void Decoder::handleRepeatingGroups() { //prepare for hell
-    std::string_view sv(payload);
+    const std::string_view sv(payload);
 
-    uint16_t groupLength = hexLittleToUint16(std::string(sv.substr(currIndex, 4)));
+    const uint16_t groupLength = hexLittleToUint16(std::string(sv.substr(currIndex, 4)));
     newOrderCrossMessageFields.setGroupCount(groupLength);
     currIndex += 4;
 
-    std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
+    const std::vector<NewOrderCrossBitfield>& newOrderCrossBitfields = newOrderCrossMessageFields.getNewOrderCrossBitfields();
 
     //adds the bitfield values into included optional bitfields
     for (const auto& newOrderCrossBitfield : newOrderCrossBitfields) {
@@ -117,11 +111,11 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
         repeatingGroups.at(i).side = static_cast<Side>(side);
         currIndex += 4;
 
-        uint32_t allocQuantity = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
+        const uint32_t allocQuantity = hexLittleToUint32(std::string(sv.substr(currIndex, 8)));
         repeatingGroups.at(i).allocQuantity = allocQuantity;
         currIndex += 8;
 
-        std::array<char, StringLength::CLIENT_ORDER_ID> clientOrderId = hexToChars<StringLength::CLIENT_ORDER_ID>(std::string(sv.substr(currIndex, StringLength::CLIENT_ORDER_ID*2)));
+        const std::array<char, StringLength::CLIENT_ORDER_ID> clientOrderId = hexToChars<StringLength::CLIENT_ORDER_ID>(std::string(sv.substr(currIndex, StringLength::CLIENT_ORDER_ID*2)));
         repeatingGroups.at(i).clientOrderId = clientOrderId;
         currIndex += StringLength::CLIENT_ORDER_ID*2;
 
@@ -171,7 +165,7 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
         //need this in seperate loop because it's Byte 4 index
         for (const auto& bitfield : matchedBitfields4) {
             if (bitfield == static_cast<uint8_t>(BitfieldIndex4::FREQUENT_TRADER_ID)) {
-                std::array<char, StringLength::FREQUENT_TRADER_ID> frequentTraderId = hexToChars<StringLength::FREQUENT_TRADER_ID>(std::string(sv.substr(currIndex, StringLength::FREQUENT_TRADER_ID*2)));
+                const auto frequentTraderId = hexToChars<StringLength::FREQUENT_TRADER_ID>(std::string(sv.substr(currIndex, StringLength::FREQUENT_TRADER_ID*2)));
                 repeatingGroups.at(i).repeatingOptionalBitfields.frequentTraderId = frequentTraderId;
                 currIndex += (StringLength::FREQUENT_TRADER_ID*2);
                 break;
@@ -185,7 +179,7 @@ void Decoder::handleRepeatingGroups() { //prepare for hell
 void Decoder::handleNonRepeatingOptionalGroups() {
     NonRepeatingOptionalField nonRepeatingOptionalFields;
 
-    std::string_view sv(payload);
+    const std::string_view sv(payload);
     for (const auto& bitfield : matchedBitfields1) {
         switch (bitfield) {
             case static_cast<uint8_t>(BitfieldIndex1::SYMBOL): {
@@ -236,6 +230,7 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 currIndex += (StringLength::PREVENT_MATCH*2);
                 break;
             }
+            default: ;
         }
     }
 
@@ -264,13 +259,14 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 currIndex += (StringLength::ROUTING_FIRM_ID*2);
                 break;
             }
+            default: ;
         }
     }
 
     for (const auto& bitfield : matchedBitfields3) {
         switch (bitfield) {
             case static_cast<uint8_t>(BitfieldIndex3::CLIENT_ID_ATTR): {
-                std::array<char, StringLength::CLIENT_ID_ATTR> clientIdAttr = hexToChars<StringLength::CLIENT_ID_ATTR>(std::string(sv.substr(currIndex, StringLength::CLIENT_ID_ATTR*2)));
+                const auto clientIdAttr = hexToChars<StringLength::CLIENT_ID_ATTR>(std::string(sv.substr(currIndex, StringLength::CLIENT_ID_ATTR*2)));
                 nonRepeatingOptionalFields.clientIdAttr = clientIdAttr;
                 currIndex += (StringLength::CLIENT_ID_ATTR*2);
                 break;
@@ -300,13 +296,13 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 break;
             }
             case static_cast<uint8_t>(BitfieldIndex3::EQUITY_BUY_CLEARING_FIRM): {
-                std::array<char, StringLength::EQUITY_BUY_CLEARING_FIRM> buyClearingFirm = hexToChars<StringLength::EQUITY_BUY_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_BUY_CLEARING_FIRM*2)));
+                const auto buyClearingFirm = hexToChars<StringLength::EQUITY_BUY_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_BUY_CLEARING_FIRM*2)));
                 nonRepeatingOptionalFields.equityBuyClearingFirm = buyClearingFirm;
                 currIndex += (StringLength::EQUITY_BUY_CLEARING_FIRM*2);
                 break;
             }
             case static_cast<uint8_t>(BitfieldIndex3::EQUITY_SELL_CLEARING_FIRM): {
-                std::array<char, StringLength::EQUITY_SELL_CLEARING_FIRM> sellClearingFirm = hexToChars<StringLength::EQUITY_SELL_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_SELL_CLEARING_FIRM*2)));
+                const auto sellClearingFirm = hexToChars<StringLength::EQUITY_SELL_CLEARING_FIRM>(std::string(sv.substr(currIndex, StringLength::EQUITY_SELL_CLEARING_FIRM*2)));
                 nonRepeatingOptionalFields.equitySellClearingFirm = sellClearingFirm;
                 currIndex += (StringLength::EQUITY_SELL_CLEARING_FIRM*2);
                 break;
@@ -317,6 +313,7 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 currIndex += 2;
                 break;
             }
+            default: ;
         }
     }
 
@@ -334,31 +331,7 @@ void Decoder::handleNonRepeatingOptionalGroups() {
                 currIndex += (StringLength::ORS*2);
                 break;
             }
+            default: ;
         }
     }
-}
-
-uint8_t Decoder::hexToUint8(const std::string& hex) {
-    return static_cast<uint8_t>(std::stoull(hex, nullptr, 16));
-}
-
-uint16_t Decoder::hexLittleToUint16(const std::string& hex) {
-    uint16_t temp = static_cast<uint16_t>(std::stoul(hex, nullptr, 16));
-    return (temp >> 8) | (temp << 8);
-}
-
-uint32_t Decoder::hexLittleToUint32(const std::string& hex) {
-    uint32_t temp = static_cast<uint32_t>(std::stoul(hex, nullptr, 16));
-    return (temp >> 24) | (temp << 24) | ((temp << 8) & 0xFF00) | ((temp >> 8) & 0xFF0000);
-}
-
-uint64_t Decoder::hexLittleToUint64(const std::string& hex) {
-    uint64_t temp = static_cast<uint64_t>(std::stoull(hex, nullptr, 16));
-    return (temp >> 56) | ((temp >> 40) & 0xFF00) | ((temp >> 24) & 0xFF0000) |
-           ((temp >> 8) & 0xFF000000) | ((temp << 8) & 0xFF00000000) |
-           ((temp << 24) & 0xFF0000000000) | ((temp << 40) & 0xFF000000000000) | (temp << 56);
-}
-
-char Decoder::hexToChar(std::string_view hex) {
-    return static_cast<char>(std::stoul(std::string(hex), nullptr, 16));
 }

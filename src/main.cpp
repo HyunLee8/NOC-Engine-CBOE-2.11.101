@@ -21,8 +21,6 @@ std::string readHexPayload(const std::filesystem::path& payloadPath) {
         fileContent += str;
     }
 
-    std::cout << fileContent;
-
     return fileContent;
 }
 

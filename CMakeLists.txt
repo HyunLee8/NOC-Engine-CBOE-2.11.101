@@ -8,7 +8,10 @@ add_executable(MyProject
         src/Decoder/decoder.cpp
         src/Messages/NewOrderCrossMsg.cpp
         src/Serialization/Serialization.cpp
+        src/Utils/HexConversion.cpp
 )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 include(FetchContent)
 

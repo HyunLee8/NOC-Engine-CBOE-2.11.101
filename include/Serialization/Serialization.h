@@ -1,4 +1,5 @@
-#include "../Messages/NewOrderCrossMsg.h"
+#include <nlohmann/json_fwd.hpp>
+#include "Messages/NewOrderCrossMsg.h"
 
 class Serializer {
 private:
